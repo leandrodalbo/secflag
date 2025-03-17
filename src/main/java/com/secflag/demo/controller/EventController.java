@@ -31,4 +31,9 @@ public class EventController {
         service.saveNewEvent(eventDto);
     }
 
+    @PostMapping("/update")
+    @ResponseStatus(HttpStatus.CREATED)
+    public void updateEvent(@RequestBody EventDto eventDto) throws InvalidEventTransaction {
+        service.updateEvent(eventDto);
+    }
 }

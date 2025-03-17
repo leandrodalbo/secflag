@@ -7,6 +7,7 @@ import com.secflag.demo.repository.EventRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class EventService {
@@ -27,6 +28,20 @@ public class EventService {
         }
 
         int affectedRows = repository.saveNewEvent(eventDto.eventName(), eventDto.eventDescription());
+
+        if (affectedRows != 1) {
+            throw new InvalidEventTransaction();
+        }
+    }
+
+    public void updateEvent(EventDto eventDto) throws InvalidEventTransaction {
+        Optional<Event> event = repository.findById(eventDto.eventId());
+
+        if (event.isEmpty()) {
+            throw new InvalidEventTransaction();
+        }
+
+        int affectedRows = repository.updateEvent(eventDto.eventId(), eventDto.eventName(), eventDto.eventDescription(), event.get().version() + 1);
 
         if (affectedRows != 1) {
             throw new InvalidEventTransaction();

@@ -11,7 +11,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
-
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -62,6 +62,39 @@ public class EventServiceTest {
                 .isThrownBy(() -> service.saveNewEvent(new EventDto(null, "a", "b")));
 
         verify(repository, times(1)).saveNewEvent(anyString(), anyString());
+    }
+
+    @Test
+    void updateShouldFailIfTheEventIsNotFound() {
+        when(repository.findById(null)).thenReturn(Optional.empty());
+
+        assertThatExceptionOfType(InvalidEventTransaction.class)
+                .isThrownBy(() -> service.updateEvent(new EventDto(null, "a", "b")));
+
+        verify(repository, times(1)).findById(null);
+    }
+
+    @Test
+    void updateShouldFailIfTheTransactionFailed() {
+        when(repository.findById(1L)).thenReturn(Optional.of(Event.newEvent("a", "b")));
+        when(repository.updateEvent(anyLong(), anyString(), anyString(), anyInt())).thenReturn(0);
+
+        assertThatExceptionOfType(InvalidEventTransaction.class)
+                .isThrownBy(() -> service.updateEvent(new EventDto(1L, "a", "b")));
+
+        verify(repository, times(1)).findById(1L);
+        verify(repository, times(1)).updateEvent(anyLong(), anyString(), anyString(), anyInt());
+    }
+
+    @Test
+    void shouldUpdateAnEvent() throws InvalidEventTransaction {
+        when(repository.findById(1L)).thenReturn(Optional.of(Event.newEvent("a", "b")));
+        when(repository.updateEvent(anyLong(), anyString(), anyString(), anyInt())).thenReturn(1);
+
+        service.updateEvent(new EventDto(1L, "a", "b"));
+
+        verify(repository, times(1)).findById(1L);
+        verify(repository, times(1)).updateEvent(anyLong(), anyString(), anyString(), anyInt());
     }
 
 }

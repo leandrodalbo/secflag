@@ -16,7 +16,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -76,6 +75,36 @@ public class EventControllerTest {
 
         assertThat(res.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
         verify(service, times(1)).saveNewEvent(any(EventDto.class));
+    }
+
+    @Test
+    public void shouldUpdateAnEventAndReturn201() throws Exception {
+        String reqBody = mapper.writeValueAsString(new EventDto(1L, "a", "b"));
+
+        doNothing().when(service).updateEvent(any(EventDto.class));
+
+        MockHttpServletResponse res = mvc.perform(post("/event/update")
+                        .content(reqBody)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andReturn().getResponse();
+
+        assertThat(res.getStatus()).isEqualTo(HttpStatus.CREATED.value());
+        verify(service, times(1)).updateEvent(any(EventDto.class));
+    }
+
+    @Test
+    public void shouldHandleWhenAnEventUpdateFailed() throws Exception {
+        String reqBody = mapper.writeValueAsString(new EventDto(1L, "a", "b"));
+
+        doThrow(InvalidEventTransaction.class).when(service).updateEvent(any(EventDto.class));
+
+        MockHttpServletResponse res = mvc.perform(post("/event/update")
+                        .content(reqBody)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andReturn().getResponse();
+
+        assertThat(res.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+        verify(service, times(1)).updateEvent(any(EventDto.class));
     }
 
 }
