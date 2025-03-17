@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: secflag-demo
+  datasource:
+    username: user
+    password: password
+    url: jdbc:postgresql://localhost:5432/secflag
+  flyway:
+    enabled: false
+  sql:
+    init:
+      mode: always
